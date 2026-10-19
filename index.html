@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAVIN INTERNATIONAL TRADING — Responses & Requests Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Poppins:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #f4f6f9;
+    --panel: #ffffff;
+    --primary: #102a43;
+    --primary-bright: #1d4ed8;
+    --gold: #d4af37;
+    --gold-light: #fef3c7;
+    --cream: #f8fafc;
+    --ink: #1e293b;
+    --muted: #64748b;
+    --ok: #16a34a;
+    --red: #dc2626;
+    --border-color: #e2e8f0;
+    --report-bg: #fff;
+    --report-dark: #121029;
+    --report-gold: #c3935b;
+  }
+
+  /* ثيم الدارك مود لما يتفعل */
+  body.dark-mode {
+    --bg-deep: #0b0b0c;
+    --panel: #141314;
+    --primary: #183b5c;
+    --primary-bright: #e8821e;
+    --gold: #e8821e;
+    --gold-light: rgba(232,130,30,0.15);
+    --cream: #1c1a17;
+    --ink: #f6f1e7;
+    --muted: #9a9488;
+    --border-color: rgba(255,255,255,0.1);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-deep);font-family:'Poppins', 'Cairo', sans-serif;color:var(--ink);min-height:100vh;direction:ltr;text-align:left;}
+  .page{width:100%;max-width:1480px;margin:0 auto;padding:15px;}
+  
+  .hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%);
+    padding: 20px 30px; border-bottom: 4px solid var(--gold);
+    border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    box-shadow: 0 4px 10px rgba(16,42,67,0.15);
+  }
+  .ravin-logo-text { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 3px; }
+  .ravin-logo-text span { color: var(--gold); }
+  
+  .title-area h1 { margin: 0; color: #fff; font-size: 19px; font-weight: 800; }
+  .title-area p { margin: 4px 0 0; color: var(--gold); font-size: 11px; font-family: 'Poppins', sans-serif; letter-spacing: 1px; }
+
+  .controls-bar {
+    background: var(--panel); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+  .search-box input {
+    padding: 10px 16px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--panel); color: var(--ink);
+    font-family: 'Poppins', sans-serif; font-size: 13.5px; width: 340px; outline: none; transition: 0.2s; direction: ltr; text-align: left;
+  }
+  .search-box input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+
+  .btn-group { display: flex; gap: 10px; align-items: center; }
+  .btn-action {
+    background: linear-gradient(90deg, var(--primary), #1e3a8a); color: #fff;
+    border: none; padding: 10px 20px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-weight: 700; cursor: pointer;
+    transition: 0.2s; display: flex; align-items: center; gap: 6px; font-size: 13px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid rgba(212,175,55,0.3);
+  }
+  .btn-action:hover { transform: translateY(-2px); filter: brightness(1.1); border-color: var(--gold); }
+  .btn-excel { background: linear-gradient(90deg, #15803d, #22c55e); color: #fff; border-color: #86efac; }
+  .btn-print-row { background: var(--primary-bright); padding: 5px 12px; font-size: 11px; border-radius: 4px; border: none; color: #fff; cursor: pointer; }
+  .btn-theme-toggle { background: #334155; color: #fff; border: 1px solid var(--gold); padding: 10px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+  #loadingOverlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px);
+    z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px;
+    color: var(--primary); font-family: 'Poppins', sans-serif; transition: 0.3s;
+  }
+  body.dark-mode #loadingOverlay { background: rgba(11, 11, 12, 0.9); color: var(--gold); }
+  .spinner {
+    width: 50px; height: 50px; border: 4px solid rgba(16, 42, 67, 0.1);
+    border-top: 4px solid var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .table-container { 
+    background: var(--panel); border-radius: 0 0 12px 12px; 
+    max-height: 70vh; overflow-y: auto; overflow-x: auto; 
+    padding: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+  }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+  
+  th { 
+    background: var(--primary); color: #ffffff; padding: 12px 10px; 
+    font-weight: 700; border-bottom: 2px solid var(--gold); white-space: nowrap; 
+    position: sticky; top: 0; z-index: 10;
+  }
+  
+  .filter-row th {
+    top: 43px; background: #183b5c; padding: 6px 8px; border-bottom: 2px solid var(--gold);
+  }
+  .filter-row select {
+    width: 100%; padding: 5px 8px; font-size: 11px; border-radius: 4px;
+    border: 1px solid rgba(212,175,55,0.4); background: var(--primary); color: #fff; outline: none;
+    font-family: 'Poppins', sans-serif; cursor: pointer;
+  }
+
+  td { padding: 10px; border-bottom: 1px solid var(--border-color); color: var(--ink); font-weight: 500; white-space: nowrap; }
+  tr:hover { background: var(--gold-light); }
+
+  /* ================= REPORT SECTION MODAL (مطابق للصورة بالمللي) ================= */
+  #printModal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 10000; overflow-y: auto; padding: 20px; direction: ltr; text-align: left;
+  }
+  .print-modal-content {
+    background: var(--report-bg); color: #000;
+    max-width: 900px; margin: 20px auto;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative;
+    font-family: 'Cairo', 'Poppins', sans-serif;
+  }
+  .rep-header { 
+    background: linear-gradient(135deg, #0b0b0c 0%, #1a1816 100%);
+    position: relative; padding: 25px 40px; border-bottom: 4px solid #e8821e;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+  }
+  .rep-logo-box .ravin-logo-text { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 900; color: #fff; letter-spacing: 3px; }
+  .rep-logo-box .ravin-logo-text span { color: #e8821e; }
+  
+  .rep-title { text-align: center; color: #fff; position: relative; z-index: 1; flex: 1;}
+  .rep-title h1 { margin: 0; font-size: 24px; font-weight: 900; font-family: 'Poppins', sans-serif; letter-spacing: 2px; }
+  .rep-title p { margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #ffab52; }
+  .rep-meta { 
+    text-align: left; background: rgba(255,255,255,0.05); color: #fff; 
+    padding: 12px 18px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    font-family: 'Poppins', sans-serif; font-size: 11px; position: relative; z-index: 1; direction: ltr;
+  }
+  .rep-meta span { color: #ffab52; font-weight: bold; }
+  
+  .rep-body { padding: 30px; }
+  .rep-box { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+  .rep-box-header { 
+    background: #121029; color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 10px;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600;
+  }
+  .rep-box-header span.num { background: #c3935b; color: #000; padding: 2px 10px; border-radius: 4px; font-weight: 800; }
+  
+  .rep-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .rep-item { padding: 12px 20px; border-bottom: 1px solid #ddd; border-left: 1px solid #ddd; font-size: 14px; display: flex; justify-content: space-between;}
+  .rep-item:nth-child(even) { border-left: none; }
+  .rep-item .lbl { color: #555; font-size: 11px; font-weight: 700; text-transform: uppercase; font-family: 'Poppins', sans-serif;}
+  .rep-item .val { font-weight: 700; color: #000; }
+
+  .status-box { margin: 20px 0; padding: 20px; border-radius: 10px; font-size: 16px; font-weight: 800; }
+  .status-success { background: rgba(58,125,93,0.08); border: 2px solid #4a7c59; color: #4a7c59; display: flex; justify-content: center; align-items: center; gap: 20px; text-align: center; }
+  .status-danger { background: rgba(192,69,58,0.05); border: 2px solid #c0453a; display: flex; flex-direction: column; }
+  .danger-header { display: flex; align-items: center; gap: 10px; color: #c0453a; margin-bottom: 10px; }
+  .deduction-grid { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .deduction-item { 
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fff; padding: 10px 15px; border-radius: 6px; border-right: 4px solid #c0453a;
+  }
+  .deduction-item .reason { font-weight: 700; color: #1c1a17; font-size: 14px; }
+  .deduction-item .amount { font-weight: 900; color: #c0453a; font-size: 14px; background: rgba(192,69,58,0.08); padding: 4px 12px; border-radius: 6px; }
+  .status-total { margin-top: 12px; text-align: center; font-size: 16px; font-weight: 900; background: #c0453a; color: #fff; padding: 8px 15px; border-radius: 6px; }
+
+  .rep-footer-new {
+    display: flex; justify-content: space-evenly; align-items: center;
+    border: 1px solid #ddd; border-radius: 8px; padding: 15px 10px;
+    margin-top: 20px; background: #fff; direction: ltr; 
+  }
+  .footer-divider { width: 1px; background-color: #ddd; align-self: stretch; margin: 0 10px; }
+  .footer-left { display: flex; flex-direction: column; align-items: center; text-align: center; width: 45%; }
+  .fc-title { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; color: #000; display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+  .fc-title .check-icon { color: #4a7c59; font-size: 16px; }
+  .fc-sub { font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; color: #000; margin-bottom: 8px; }
+  .stamp-box { border: 2px solid #4a7c59; color: #4a7c59; padding: 6px 20px; font-size: 22px; font-weight: 900; font-family: 'Poppins', sans-serif; border-radius: 6px; transform: rotate(-5deg); margin-bottom: 10px; }
+  .fc-date-line { width: 80%; height: 1px; background-color: #999; margin-bottom: 6px; }
+  .fc-date { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 14px; color: #000; }
+
+  .footer-right { display: flex; flex-direction: column; align-items: center; text-align: center; width: 45%; }
+  .fa-title {
+    background: #121029; color: #fff; padding: 8px 15px; border-radius: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; width: 100%; margin-bottom: 10px;
+  }
+  .fa-title .num-badge { background: #c3935b; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 800; }
+  .sig-line { width: 80%; height: 1px; background-color: #e0e0e0; margin-bottom: 4px; }
+  .sig-name { font-family: 'Dancing Script', cursive; font-size: 32px; font-weight: 700; color: #121029; margin-bottom: 2px; }
+  .sig-role { font-family: 'Poppins', sans-serif; font-size: 11px; color: #333; }
+
+  .modal-actions { text-align: center; margin: 20px 0; display: flex; justify-content: center; gap: 15px; }
+  .btn-print { background: #121029; color: #fff; font-size: 16px; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+  .btn-close-modal { background: #dc2626; color: #fff; font-size: 16px; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; }
+
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    .page, #loadingOverlay, #printModal > div > .modal-actions { display: none !important; }
+    #printModal { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: #fff !important; padding: 0 !important; overflow: visible !important; display: block !important; }
+    .print-modal-content { box-shadow: none !important; margin: 0 auto !important; width: 100% !important; max-width: 190mm !important; border: none !important; }
+    @page { size: A4 portrait; margin: 5mm; }
+    .rep-header { padding: 8px 12px; background: #121029 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .rep-title h1 { font-size: 14px; }
+    .rep-title p { font-size: 9px; }
+    .rep-meta { font-size: 8px; padding: 4px 6px; }
+    .rep-body { padding: 8px; }
+    .rep-box { margin-bottom: 5px; page-break-inside: avoid; }
+    .rep-box-header { padding: 3px 6px; font-size: 10px; background: #121029 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .rep-item { padding: 3px 6px; font-size: 10px; }
+    .status-box { margin: 5px 0; padding: 6px; font-size: 10.5px; page-break-inside: avoid; }
+    .deduction-item { padding: 3px 6px; }
+    .rep-footer-new { margin-top: 5px; padding: 5px 4px; page-break-inside: avoid; }
+    .fa-title { background: #121029 !important; color: #fff !important; padding: 3px 6px; font-size: 9px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .fa-title .num-badge { background: #c3935b !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sig-name { font-size: 18px; }
+    .stamp-box { padding: 2px 8px; font-size: 13px; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div style="font-size: 15px; font-weight: 600; letter-spacing: 0.5px;">Syncing responses from sheet...</div>
+</div>
+
+<div class="page">
+  <header class="hero">
+    <div class="ravin-logo-text">RAV<span>IN</span></div>
+    <div class="title-area">
+      <h1>Responses & Requests Dashboard</h1>
+      <p>EMPLOYEE CLEARANCE RESPONSES VIEWER — RAVIN TRADING</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn-theme-toggle" id="themeToggleBtn">🌙 Dark Mode</button>
+      <div style="color: #fff; font-size: 11.5px; font-family: 'Poppins', sans-serif; background: rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--gold);">
+        ADMIN: <b>HR EBRAHIM HASSAN</b>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls-bar">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="🔍 Quick search by ID or Name...">
+    </div>
+    <div class="btn-group">
+      <button class="btn-action btn-excel" id="exportExcelBtn">📊 Export to Excel</button>
+      <button class="btn-action" id="refreshBtn">🔄 Refresh Data</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>🖨️ Action</th>
+          <th>Timestamp</th>
+          <th>📧 User Email</th>
+          <th>🆔 Employee ID</th>
+          <th>👤 Full Name</th>
+          <th>🏢 Branch</th>
+          <th>💼 Job Position</th>
+          <th>📱 Mobile Number</th>
+          <th>🗓️ Last Working Date</th>
+          <th>📄 Resignation Status</th>
+          <th>✅ 14 Days Completed</th>
+          <th>📎 Resignation File Link</th>
+          <th>👕 Uniform Issue</th>
+          <th>☀️ Summer Qty</th>
+          <th>❄️ Winter Qty</th>
+          <th>🏷️ Name Tag Issue</th>
+          <th>📦 Other Assets</th>
+          <th>💰 Financial Dues</th>
+          <th>💵 Dues Type & Value</th>
+          <th>🔒 20% Hold</th>
+          <th>📝 Notes</th>
+          <th>⚙️ Final Status</th>
+          <th>🧮 Total Deduction</th>
+          <th>👑 Submitted By (HR)</th>
+        </tr>
+        <tr class="filter-row">
+          <th></th>
+          <th><select data-col="0"><option value="">All</option></select></th>
+          <th><select data-col="1"><option value="">All</option></select></th>
+          <th><select data-col="2"><option value="">All</option></select></th>
+          <th><select data-col="3"><option value="">All</option></select></th>
+          <th><select data-col="4"><option value="">All</option></select></th>
+          <th><select data-col="5"><option value="">All</option></select></th>
+          <th><select data-col="6"><option value="">All</option></select></th>
+          <th><select data-col="7"><option value="">All</option></select></th>
+          <th><select data-col="8"><option value="">All</option></select></th>
+          <th><select data-col="9"><option value="">All</option></select></th>
+          <th><select data-col="10"><option value="">All</option></select></th>
+          <th><select data-col="11"><option value="">All</option></select></th>
+          <th><select data-col="12"><option value="">All</option></select></th>
+          <th><select data-col="13"><option value="">All</option></select></th>
+          <th><select data-col="14"><option value="">All</option></select></th>
+          <th><select data-col="15"><option value="">All</option></select></th>
+          <th><select data-col="16"><option value="">All</option></select></th>
+          <th><select data-col="17"><option value="">All</option></select></th>
+          <th><select data-col="18"><option value="">All</option></select></th>
+          <th><select data-col="19"><option value="">All</option></select></th>
+          <th><select data-col="20"><option value="">All</option></select></th>
+          <th><select data-col="21"><option value="">All</option></select></th>
+          <th><select data-col="22"><option value="">All</option></select></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- نافذة تقرير الطباعة المطابق للصورة تماماً -->
+<div id="printModal">
+  <div class="print-modal-content">
+    <div class="rep-header">
+      <div class="rep-logo-box">
+        <div class="ravin-logo-text">RAV<span>IN</span></div>
+      </div>
+      <div class="rep-title">
+        <h1>EMPLOYEE CLEARANCE</h1>
+        <p>نموذج إخلاء طرف موظف - RAVIN INTERNATIONAL TRADING</p>
+      </div>
+      <div class="rep-meta">
+        CLEARANCE NO: <br><span id="repNo"></span><br><br>
+        DATE: <br><span id="repDate"></span>
+      </div>
+    </div>
+
+    <div class="rep-body">
+      <div class="rep-box">
+        <div class="rep-box-header"><span class="num">01</span> EMPLOYEE INFORMATION - البيانات الشخصية</div>
+        <div class="rep-grid">
+          <div class="rep-item"><span class="lbl">Full Name</span> <span class="val" id="repName"></span></div>
+          <div class="rep-item"><span class="lbl">Mobile</span> <span class="val" id="repMobile"></span></div>
+          <div class="rep-item"><span class="lbl">Employee ID</span> <span class="val" id="repID"></span></div>
+          <div class="rep-item"><span class="lbl">Last Working Date</span> <span class="val" id="repLWD"></span></div>
+          <div class="rep-item"><span class="lbl">Branch</span> <span class="val" id="repBranch"></span></div>
+          <div class="rep-item"><span class="lbl">Submitted By</span> <span class="val" id="repSubmittedByDisplay"></span></div>
+          <div class="rep-item"><span class="lbl">Job Position</span> <span class="val" id="repJob"></span></div>
+          <div class="rep-item" style="border-bottom:none;"><span class="lbl">Request Date</span> <span class="val" id="repReqDate"></span></div>
+        </div>
+      </div>
+
+      <div class="rep-box">
+        <div class="rep-box-header"><span class="num">02</span> RESIGNATION - الاستقالة</div>
+        <div class="rep-grid">
+          <div class="rep-item"><span class="lbl">Resignation Status</span> <span class="val" id="repResStatus"></span></div>
+          <div class="rep-item"><span class="lbl">14 Days Completed</span> <span class="val" id="rep14Days"></span></div>
+        </div>
+      </div>
+
+      <div class="rep-box">
+        <div class="rep-box-header"><span class="num">03</span> COMPANY ASSETS - عهد الشركة</div>
+        <div class="rep-grid">
+          <div class="rep-item"><span class="lbl">Uniform</span> <span class="val" id="repUni"></span></div>
+          <div class="rep-item"><span class="lbl">Name Tag</span> <span class="val" id="repNameTag"></span></div>
+          <div class="rep-item full" style="grid-column: 1/-1; border-left:none; border-bottom:none;"><span class="lbl">Other Assets</span> <span class="val" id="repOther"></span></div>
+        </div>
+      </div>
+
+      <div class="rep-box" style="margin-bottom: 0;">
+        <div class="rep-box-header"><span class="num">04</span> FINANCIAL CLEARANCE - البراءة المالية</div>
+        <div class="rep-grid">
+          <div class="rep-item"><span class="lbl">Outstanding Dues</span> <span class="val" id="repDues"></span></div>
+          <div class="rep-item"><span class="lbl">20% Hold</span> <span class="val" id="repHold"></span></div>
+          <div class="rep-item full" style="grid-column: 1/-1; border-left:none; border-bottom:none;"><span class="lbl">Notes</span> <span class="val" id="repNotes"></span></div>
+        </div>
+      </div>
+
+      <div id="repFinalStatus"></div>
+
+      <div class="rep-footer-new">
+        <div class="footer-left">
+          <div class="fc-title"><span class="check-icon">✔️</span> Final Clearance</div>
+          <div class="fc-sub">تم إخلاء الطرف</div>
+          <div class="stamp-box">CLEARED</div>
+          <div class="fc-date-line"></div>
+          <div class="fc-date" id="repStampDate2"></div>
+        </div>
+        
+        <div class="footer-divider"></div>
+        
+        <div class="footer-right">
+          <div class="fa-title"><span>الاعتماد النهائي – FINAL APPROVAL</span><span class="num-badge">05</span></div>
+          <div class="sig-name">HR EBRAHIM HASSAN</div>
+          <div class="sig-line"></div>
+          <div class="sig-role">Current print date: <span id="repPrintDate2"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+      <button class="btn-close-modal" onclick="document.getElementById('printModal').style.display='none'">✕ إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwP74hwvmniGtuVE_aEmlpzecAREFGZjl6ts9t27ACzY2WIPE2mEyi-tAzdDHK0y6d4g/exec";
+
+  // تفعيل و تبديل ثيم الدارك مود واللايت مود
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  themeToggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    if(document.body.classList.contains('dark-mode')) {
+      themeToggleBtn.textContent = "☀️ Light Mode";
+    } else {
+      themeToggleBtn.textContent = "🌙 Dark Mode";
+    }
+  });
+
+  let rawResponses = [];
+  let tableHeaders = [];
+
+  function formatCairoTime(dateStr) {
+    if (!dateStr || dateStr === '-') return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleString('en-GB', {
+        timeZone: 'Africa/Cairo',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  function fetchResponses() {
+    const overlay = document.getElementById('loadingOverlay');
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '1';
+
+    fetch(SCRIPT_URL + "?type=all_responses")
+      .then(res => res.json())
+      .then(data => {
+        if(Array.isArray(data) && data.length > 0) {
+          tableHeaders = data[0];
+          rawResponses = data.slice(1).filter(row => row && row.some(cell => cell !== "" && cell !== null));
+          populateColumnFilters();
+          renderTable(rawResponses);
+        } else {
+          document.getElementById('tableBody').innerHTML = '<tr><td colspan="24" style="text-align: center; padding: 30px; color: var(--muted);">No responses recorded in the sheet yet.</td></tr>';
+        }
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 300);
+      })
+      .catch(err => {
+        alert("⚠️ Error connecting to server.");
+        overlay.style.display = 'none';
+      });
+  }
+
+  function populateColumnFilters() {
+    const filterSelects = document.querySelectorAll('.filter-row select');
+    filterSelects.forEach(select => {
+      const colIdx = parseInt(select.getAttribute('data-col'));
+      const uniqueVals = [...new Set(rawResponses.map(r => {
+        let val = r[colIdx] !== undefined && r[colIdx] !== null ? r[colIdx] : '';
+        if (colIdx === 0) val = formatCairoTime(val);
+        return String(val).trim();
+      }))].filter(v => v !== '' && v !== '-');
+      uniqueVals.sort();
+
+      select.innerHTML = '<option value="">All</option>';
+      uniqueVals.forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        select.appendChild(opt);
+      });
+    });
+  }
+
+  function renderTable(records) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    
+    if(records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="24" style="text-align: center; color: var(--muted); padding: 20px;">No matching results found</td></tr>';
+      return;
+    }
+
+    records.forEach((r, index) => {
+      const tr = document.createElement('tr');
+      let rowHtml = `<td><button class="btn-print-row" onclick="openPrintModal(${index})">🖨️ Print</button></td>`;
+      
+      for(let i = 0; i < 23; i++) {
+        let val = r[i] !== undefined && r[i] !== null ? r[i] : '-';
+        if(i === 0) val = formatCairoTime(val);
+
+        let style = '';
+        if(i === 2) style = 'color: var(--primary-bright); font-weight: 800;';
+        if(i === 21) style = 'color: var(--red); font-weight: 800;';
+        rowHtml += `<td style="${style}">${val}</td>`;
+      }
+      tr.innerHTML = rowHtml;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openPrintModal(rowIndex) {
+    const r = rawResponses[rowIndex];
+    if(!r) return;
+
+    const reqDateStr = r[0] ? formatCairoTime(r[0]) : '-';
+    const yearMatch = reqDateStr.match(/\d{4}/);
+    const yr = yearMatch ? yearMatch[0] : '2026';
+    const now = new Date();
+    const fullDateFormatted = `${String(now.getDate()).padStart(2, '0')} / ${String(now.getMonth() + 1).padStart(2, '0')} / ${now.getFullYear()}`;
+
+    document.getElementById('repNo').textContent = "CL-" + yr + "-" + (r[2] || '0000');
+    document.getElementById('repDate').textContent = reqDateStr;
+    document.getElementById('repReqDate').textContent = r[7] || '-';
+    document.getElementById('repStampDate2').textContent = fullDateFormatted;
+    document.getElementById('repPrintDate2').textContent = fullDateFormatted;
+
+    document.getElementById('repName').textContent = r[3] || '-';
+    document.getElementById('repID').textContent = r[2] || '-';
+    document.getElementById('repBranch').textContent = r[4] || '-';
+    document.getElementById('repJob').textContent = r[5] || '-';
+    document.getElementById('repMobile').textContent = r[6] || '-';
+    document.getElementById('repLWD').textContent = r[7] || '-';
+    document.getElementById('repSubmittedByDisplay').textContent = r[1] || r[22] || 'HR EBRAHIM HASSAN';
+
+    const resStatus = r[8] || '-';
+    const days14 = r[9] || '-';
+    document.getElementById('repResStatus').textContent = resStatus;
+    document.getElementById('rep14Days').textContent = days14;
+
+    const uniIssue = r[11] || '-';
+    const sQty = r[12] || 0;
+    const wQty = r[13] || 0;
+    if (uniIssue === 'نعم' || (sQty > 0 || wQty > 0)) {
+      const calcVal = (wQty * 100) + (sQty * 50);
+      document.getElementById('repUni').textContent = `مطلوب - شتوي: ${wQty} قطعة | صيفي: ${sQty} قطعة (الإجمالي: ${calcVal} ج.م)`;
+    } else {
+      document.getElementById('repUni').textContent = 'تم التسليم ✔️';
+    }
+
+    const tagIssue = r[14] || '-';
+    document.getElementById('repNameTag').textContent = tagIssue !== 'لا' && tagIssue !== '-' ? "مطلوب: " + tagIssue : 'تم التسليم ✔️';
+    
+    const otherA = r[15] || '-';
+    document.getElementById('repOther').textContent = otherA !== '-' ? otherA : 'لا يوجد';
+
+    const dues = r[16] || '-';
+    const duesVal = r[17] || '-';
+    document.getElementById('repDues').textContent = dues !== 'لا' && dues !== '-' ? dues + " - " + duesVal : 'لا يوجد مستحقات ✔️';
+    
+    const hold = r[18] || '-';
+    document.getElementById('repHold').textContent = hold === 'نعم' ? 'نعم، تم الحجز' : 'لا يوجد حجز';
+    
+    const notes = r[19] || '-';
+    document.getElementById('repNotes').textContent = notes !== '-' ? notes : 'لا يوجد ملاحظات إضافية';
+
+    let hasIssues = false;
+    let reasons = [];
+    let totalDeduction = 0;
+
+    if (resStatus.includes('انقطاع') || days14 === 'لا') {
+      hasIssues = true;
+      reasons.push({ label: 'خصم قانوني (انقطاع أو عدم استكمال 14 يوم)', amount: 650 });
+      totalDeduction += 650;
+    }
+    if (hold === 'نعم') {
+      hasIssues = true;
+      reasons.push({ label: 'حجز لحين جرد الفرع', amount: 1300 });
+      totalDeduction += 1300;
+    }
+    if (uniIssue === 'نعم') {
+      hasIssues = true;
+      let uVal = (wQty * 100) + (sQty * 50);
+      reasons.push({ label: "عهد يونيفورم (شتوي وصيفي)", amount: uVal });
+      totalDeduction += uVal;
+    }
+    if (r[21] && parseFloat(r[21]) > 0) {
+      hasIssues = true;
+      totalDeduction = parseFloat(r[21]);
+    }
+
+    const statusBox = document.getElementById('repFinalStatus');
+    if (hasIssues && reasons.length > 0) {
+      let htmlContent = "<div class='danger-header'><span style='font-size:22px;'>❌</span><span>توجد مستحقات أو عهد مطلوبة من الموظف:</span></div>";
+      htmlContent += "<div class='deduction-grid'>";
+      reasons.forEach(function(item){ 
+        htmlContent += "<div class='deduction-item'><span class='reason'>" + item.label + "</span><span class='amount'>" + item.amount + " ج.م</span></div>";
+      });
+      htmlContent += "</div>";
+      htmlContent += "<div class='status-total'>إجمالي المطلوب / المحجوز = " + (parseFloat(r[21]) || totalDeduction) + " ج.م</div>";
+      
+      statusBox.className = 'status-box status-danger';
+      statusBox.innerHTML = htmlContent;
+    } else {
+      statusBox.className = 'status-box status-success';
+      statusBox.innerHTML = `
+        <div class="text-content">
+            <div>لا يوجد أي عهد أو مستحقات على الموظف</div>
+            <div style="font-size:14px; font-weight:700;">تم إنهاء جميع الالتزامات المالية والعهد بنجاح</div>
+        </div>
+      `;
+    }
+
+    document.getElementById('printModal').style.display = 'block';
+  }
+
+  function applyFilters() {
+    const generalSearch = document.getElementById('searchInput').value.toLowerCase().trim();
+    const filterSelects = document.querySelectorAll('.filter-row select');
+    
+    const filtered = rawResponses.filter(r => {
+      if(generalSearch) {
+        const matchGeneral = r.some((cell, idx) => {
+          let cellText = String(cell);
+          if (idx === 0) cellText = formatCairoTime(cellText);
+          return cellText.toLowerCase().includes(generalSearch);
+        });
+        if(!matchGeneral) return false;
+      }
+      
+      for(let sel of filterSelects) {
+        const colIdx = parseInt(sel.getAttribute('data-col'));
+        const filterVal = sel.value.trim();
+        if(filterVal !== '') {
+          let cellVal = String(r[colIdx] !== undefined && r[colIdx] !== null ? r[colIdx] : '').trim();
+          if (colIdx === 0) cellVal = formatCairoTime(cellVal);
+          if(cellVal !== filterVal) return false;
+        }
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    
+    if(filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="24" style="text-align: center; color: var(--muted); padding: 20px;">No matching results found</td></tr>';
+      return;
+    }
+
+    filtered.forEach(r => {
+      const originalIndex = rawResponses.indexOf(r);
+      const tr = document.createElement('tr');
+      let rowHtml = `<td><button class="btn-print-row" onclick="openPrintModal(${originalIndex})">🖨️ Print</button></td>`;
+      for(let i = 0; i < 23; i++) {
+        let val = r[i] !== undefined && r[i] !== null ? r[i] : '-';
+        if(i === 0) val = formatCairoTime(val);
+        let style = '';
+        if(i === 2) style = 'color: var(--primary-bright); font-weight: 800;';
+        if(i === 21) style = 'color: var(--red); font-weight: 800;';
+        rowHtml += `<td style="${style}">${val}</td>`;
+      }
+      tr.innerHTML = rowHtml;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.querySelectorAll('.filter-row select').forEach(sel => {
+    sel.addEventListener('change', applyFilters);
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', fetchResponses);
+
+  document.getElementById('exportExcelBtn').addEventListener('click', function() {
+    if(rawResponses.length === 0) {
+      alert("No data available to export!");
+      return;
+    }
+    const formattedResponses = rawResponses.map(r => {
+      const copy = [...r];
+      copy[0] = formatCairoTime(copy[0]);
+      return copy;
+    });
+    const exportData = [tableHeaders, ...formattedResponses];
+    const ws = XLSX.utils.aoa_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Responses");
+    XLSX.writeFile(wb, "Ravin_Clearance_Responses.xlsx");
+  });
+
+  fetchResponses();
+</script>
+</body>
+</html>
